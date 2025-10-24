@@ -1,0 +1,5 @@
+{
+  "name": "PackTunes",
+  "description": "An application to discover and collect songs, trade with friends, and build your ultimate music collection.",
+  "requestFramePermissions": []
+}

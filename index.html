@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>PackTunes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        /* Needed for the bottom nav bar */
+        padding-bottom: 80px;
+      }
+
+      /* --- Hides scrollbar globally but keeps functionality --- */
+      *::-webkit-scrollbar {
+          display: none;
+      }
+      * {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+      }
+      
+      /* --- 3D Card & Holographic Effect Styles --- */
+      .card-3d-container {
+        perspective: 1000px;
+      }
+      .card-3d {
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+      }
+      .card-3d.is-flipped {
+        transform: rotateY(180deg);
+      }
+      .card-3d-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        overflow: hidden;
+        border-radius: 0.5rem; /* Corresponds to rounded-lg */
+      }
+      .card-3d-back {
+        transform: rotateY(180deg);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        background: linear-gradient(45deg, #1a1a2e, #16213e);
+        border: 2px solid;
+        border-image: linear-gradient(45deg, #00c6ff, #0072ff) 1;
+      }
+      .holographic-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 50%);
+        mix-blend-mode: color-dodge;
+        opacity: 0;
+        transition: opacity 0.3s;
+        pointer-events: none;
+      }
+      .card-3d-container:hover .holographic-overlay {
+        opacity: 0.6;
+      }
+      
+      /* --- New Pack Styles --- */
+       @keyframes float-shake {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          25% { transform: translateY(-8px) rotate(-1.5deg); }
+          50% { transform: translateY(0px) rotate(0deg); }
+          75% { transform: translateY(-8px) rotate(1.5deg); }
+      }
+      .pack-perspective {
+        perspective: 1500px;
+      }
+      .pack-3d {
+        transform-style: preserve-3d;
+        transition: transform 0.1s linear;
+        animation: float-shake 6s ease-in-out infinite;
+      }
+      .pack-holographic {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: radial-gradient(circle at var(--holoX, 50%) var(--holoY, 50%), rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 50%);
+        mix-blend-mode: color-dodge;
+        opacity: 0;
+        transition: opacity 0.3s;
+        pointer-events: none;
+      }
+      .pack-perspective:hover .pack-holographic {
+        opacity: 0.7;
+      }
+      
+      /* --- Modal Styles --- */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        animation: fadeIn 0.3s ease-out;
+      }
+      .modal-content {
+        animation: slideUp 0.4s ease-out;
+      }
+
+       /* --- Animation Keyframes --- */
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes slideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      @keyframes spin-vinyl {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      .profile-frame-vinyl {
+          animation: spin-vinyl 10s linear infinite;
+      }
+      @keyframes stage-light-pulse {
+        0%, 100% { box-shadow: 0 0 20px rgba(79, 70, 229, 0.4), 0 0 40px rgba(139, 92, 246, 0.3), inset 0 0 50px rgba(0,0,0,0.5); }
+        50% { box-shadow: 0 0 30px rgba(79, 70, 229, 0.6), 0 0 60px rgba(139, 92, 246, 0.5), inset 0 0 50px rgba(0,0,0,0.5); }
+      }
+
+      .mythic-glow {
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.6), 0 0 5px rgba(250, 204, 21, 0.5);
+      }
+      .shiny-glow {
+        box-shadow: 0 0 15px rgba(34, 211, 238, 0.6), 0 0 5px rgba(255, 255, 255, 0.5);
+      }
+       .prestige-glow {
+        box-shadow: 0 0 20px rgba(250, 204, 21, 0.7), 0 0 8px rgba(255, 255, 255, 0.8);
+      }
+      .jailbroken-glow {
+        animation: jailbroken-pulse 2.8s ease-in-out infinite;
+      }
+      @keyframes jailbroken-pulse {
+        0%, 100% { box-shadow: 0 0 18px rgba(0, 0, 0, 0.7), 0 0 8px rgba(220, 220, 220, 0.2); }
+        50% { box-shadow: 0 0 30px rgba(0, 0, 0, 0.9), 0 0 14px rgba(255, 255, 255, 0.4); }
+      }
+
+      .mythic-border {
+        border: 2px solid;
+        border-image: linear-gradient(45deg, #facc15, #a855f7, #facc15) 1;
+      }
+       .prestige-border {
+        border: 2px solid;
+        border-image: linear-gradient(45deg, #fde047, #ffffff, #fde047) 1;
+      }
+       .jailbroken-border {
+        border: 2px solid;
+        border-image: linear-gradient(45deg, #555, #fff, #555) 1;
+      }
+      .shiny-overlay-effect {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.4) 50%, transparent 70%);
+          background-size: 300% 100%;
+          animation: shiny-sweep 3s ease-in-out infinite;
+          border-radius: 0.5rem; /* rounded-lg */
+      }
+      .prestige-overlay-effect {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 50% 50%, rgba(253, 224, 71, 0.3), transparent 70%);
+          animation: prestige-pulse 2.5s ease-in-out infinite;
+          border-radius: 0.5rem; /* rounded-lg */
+      }
+      .jailbroken-overlay-effect {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 50% 50%, rgba(220, 220, 220, 0.15), transparent 60%);
+          animation: prestige-pulse 3s ease-in-out infinite;
+          border-radius: 0.5rem; /* rounded-lg */
+      }
+      
+      @keyframes shiny-sweep {
+          from { background-position: 150% 0; }
+          to { background-position: -50% 0; }
+      }
+       @keyframes prestige-pulse {
+        0%, 100% { opacity: 0.5; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.05); }
+      }
+      .drag-over-hint {
+        box-shadow: 0 2px 0 0 #4f46e5; /* A simple line indicator */
+      }
+
+      /* --- Jailbroken Modal Effects --- */
+      .jailbroken-modal .modal-content {
+        animation: jailbreak-reveal 0.8s cubic-bezier(0.1, 0.8, 0.2, 1);
+      }
+      @keyframes jailbreak-reveal {
+          from {
+              opacity: 0;
+              filter: blur(10px) brightness(4);
+              transform: scale(1.1);
+          }
+          to {
+              opacity: 1;
+              filter: none;
+              transform: scale(1);
+          }
+      }
+      .jailbroken-scanlines {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
+          background-size: 100% 4px;
+          animation: scanlines 4s linear infinite;
+          pointer-events: none;
+          z-index: 2;
+      }
+      .glitch-text {
+          position: relative;
+      }
+      .glitch-text[data-text]::before,
+      .glitch-text[data-text]::after {
+          content: attr(data-text);
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          background: inherit;
+      }
+      .glitch-text[data-text]::before {
+          left: 2px;
+          text-shadow: -2px 0 #ff00c1;
+          clip-path: rect(24px, 550px, 90px, 0);
+          animation: glitch-anim-1 3s infinite linear alternate-reverse;
+      }
+      .glitch-text[data-text]::after {
+          left: -2px;
+          text-shadow: -2px 0 #00fff9, 2px 2px #ff00c1;
+          clip-path: rect(85px, 550px, 140px, 0);
+          animation: glitch-anim-2 4s infinite linear alternate-reverse;
+      }
+      @keyframes glitch-anim-1 {
+          0% { clip-path: rect(27px, 9999px, 92px, 0) }
+          25% { clip-path: rect(18px, 9999px, 89px, 0) }
+          50% { clip-path: rect(50px, 9999px, 102px, 0) }
+          75% { clip-path: rect(27px, 9999px, 92px, 0) }
+          100% { clip-path: rect(38px, 9999px, 120px, 0) }
+      }
+      @keyframes glitch-anim-2 {
+          0% { clip-path: rect(122px, 9999px, 100px, 0) }
+          25% { clip-path: rect(14px, 9999px, 63px, 0) }
+          50% { clip-path: rect(68px, 9999px, 80px, 0) }
+          75% { clip-path: rect(140px, 9999px, 140px, 0) }
+          100% { clip-path: rect(33px, 9999px, 74px, 0) }
+      }
+      /* Iridescent Trophy Effect */
+      @keyframes iridescent-spin {
+        to { --angle: 360deg; }
+      }
+      @property --angle {
+        syntax: '<angle>';
+        initial-value: 0deg;
+        inherits: false;
+      }
+      .iridescent-border-bg {
+        position: relative;
+        background-color: #1f2937; /* bg-gray-800 */
+        background-clip: padding-box;
+        border: 2px solid transparent;
+      }
+      .iridescent-border-bg::before {
+        content: '';
+        position: absolute;
+        top: -2px; left: -2px; right: -2px; bottom: -2px;
+        background: conic-gradient(from var(--angle), #d783ff, #299fff, #ff8a00, #299fff, #d783ff);
+        border-radius: inherit; /* Assumes parent has rounded corners */
+        z-index: -1;
+        animation: iridescent-spin 4s linear infinite;
+      }
+       @keyframes trophy-reveal {
+          from {
+              opacity: 0;
+              transform: translateY(30px) scale(0.9);
+          }
+          to {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+          }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0",
+    "react": "https://aistudiocdn.com/react@^18.2.0",
+    "react/": "https://aistudiocdn.com/react@^18.2.0/",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^18.2.0/",
+    "vite": "https://aistudiocdn.com/vite@^7.1.10",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.0.4",
+    "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+    "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.4.0/"
+  }
+}
+</script>
+</head>
+  <body class="bg-gray-900">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
